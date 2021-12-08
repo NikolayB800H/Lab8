@@ -61,7 +61,8 @@ int main() {
         std::ifstream is("in");
         Matrix m1(is);
         std::cout << "Got from file:\n" << m1;
-        std::cout << "Without zero streaks:\n" << m1.deleteZeroStreaks();
+        m1.deleteZeroStreaks();
+        std::cout << "Without zero streaks:\n" << m1;
         is.close();
     }
     return 0;

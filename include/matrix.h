@@ -77,7 +77,9 @@ class Matrix {
     friend
     std::ostream &operator<<(std::ostream &os, const Matrix &matrix);
 
-    Matrix deleteZeroStreaks() const;
+    void deleteZeroStreaks();
+
+    void trunc(size_t rows, size_t cols);
 
     Matrix transp() const;
 

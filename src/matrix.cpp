@@ -245,7 +245,7 @@ Matrix Matrix::operator*(double val) const {
     return result;
 }
 
-Matrix Matrix::deleteZeroStreaks() const {
+void Matrix::deleteZeroStreaks() {
     size_t *use_row = new size_t[rows];
     size_t *use_col = new size_t[cols];
     memset(use_row, 0, rows * sizeof(size_t));
@@ -254,7 +254,6 @@ Matrix Matrix::deleteZeroStreaks() const {
     size_t last_col = 0;
     for (size_t row_i = 0; row_i < cols; ++row_i) {
         for (size_t col_i = 0; col_i < rows; ++col_i) {
-            // std::cout << col_i << ' ' << row_i << ' ' << last_row << ' ' << last_col << std::endl;
             if (!almostEqual(0, data[row_i][col_i])) {
                 ++use_row[row_i];
                 ++use_col[col_i];
@@ -263,28 +262,58 @@ Matrix Matrix::deleteZeroStreaks() const {
     }
     size_t row_i = 0;
     size_t col_i = 0;
-    Matrix result(*this);
-    for (; row_i < rows; ++row_i) {
+    size_t repeat_cnt = 0;
+    size_t prev = 0;
+    for (; row_i < rows && repeat_cnt < rows - row_i; ++row_i) {
+        if (prev == row_i) {
+            ++repeat_cnt;
+        } else {
+            repeat_cnt = 0;
+            prev = row_i;
+        }
         if (use_row[row_i] == 0) {
             for (size_t row_j = row_i; row_j < rows - 1; ++row_j) {
-                swap(result.data[row_j], result.data[row_j + 1]);
+                swap(data[row_j], data[row_j + 1]);
                 swap(use_row[row_j], use_row[row_j + 1]);
             }
+            --row_i;
         }
     }
-    for (; col_i < cols; ++col_i) {
+    for (; col_i < cols && repeat_cnt < cols - col_i; ++col_i) {
+        if (prev == col_i) {
+            ++repeat_cnt;
+        } else {
+            repeat_cnt = 0;
+            prev = col_i;
+        }
         if (use_col[col_i] == 0) {
             for (size_t col_j = col_i; col_j < cols - 1; ++col_j) {
                 for (size_t row_i = 0; row_i < rows; ++row_i) {
-                    swap(result.data[row_i][col_j], result.data[row_i][col_j + 1]);
+                    swap(data[row_i][col_j], data[row_i][col_j + 1]);
                 }
-                swap(use_col[col_j], use_row[col_j + 1]);
+                swap(use_col[col_j], use_col[col_j + 1]);
             }
+            --col_i;
         }
     }
     delete[] use_row;
     delete[] use_col;
-    return result;
+    trunc(row_i, col_i);
+}
+
+void Matrix::trunc(size_t new_rows, size_t new_cols) {
+    double **new_data = new double *[new_rows];
+    double *new_raw_data = new double[new_rows * new_cols];
+    for (size_t row_i = 0; row_i < new_rows; ++row_i) {
+        new_data[row_i] = new_raw_data + row_i * new_cols;
+        memcpy(new_data[row_i], data[row_i], new_cols * sizeof(double));
+    }
+    delete[] data;
+    delete[] raw_data;
+    rows = new_rows;
+    cols = new_cols;
+    data = new_data;
+    raw_data = new_raw_data;
 }
 
 Matrix Matrix::transp() const {
