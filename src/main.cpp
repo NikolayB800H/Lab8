@@ -6,27 +6,13 @@
 #include "exceptions.h"
 #include "matrix.h"
 
-constexpr size_t SIZE = 10;    // How many rows (and collums) in matrix
+constexpr size_t SIZE = 10;  // How many rows (and collums) in matrix (for lab8)
 
 int main() {
-    /*
-    std::ifstream is("in");
-    Matrix m1(is);
-    std::cout << m1;
-    is.close();
-    auto file_name = "out";
-    std::ofstream os(file_name);
-    os << m1;
-    os.close();
-    std::ifstream is2(file_name);
-    Matrix m2(is2);
-    is2.close();
-    std::cout << m2;
-    */
     char yes_or_no = 'n';
     std::cout << "Check lab №8? (y/n)\n";
     std::cin >> yes_or_no;
-    if (yes_or_no == 'y') {
+    if (yes_or_no == 'y') {  // lab8
         std::cout << "Runing lab №8\n";
         std::cout << std::setw(81) << std::setfill('=') << "[80 chars len]=\n" << std::setfill(' ');
         Matrix m3(SIZE, SIZE);
@@ -56,7 +42,7 @@ int main() {
         std::cout << B.B[0][20]  << "  " << *(B.B[0]+20) << "  " << *B.B[2] << std::endl;
         m4.data = nullptr;
         m4.raw_data = nullptr;
-    } else {
+    } else {  // delete zero streaks
         std::cout << "Runing no zero rows and cols\n";
         std::ifstream is("in");
         Matrix m1(is);

@@ -8,8 +8,6 @@
 #include <istream>
 #include <limits>
 
-#include <iostream>
-
 template <class T>
 static void swap(T &a, T &b) {
     T tmp = a;
@@ -252,13 +250,18 @@ void Matrix::deleteZeroStreaks() {
     memset(use_col, 0, cols * sizeof(size_t));
     size_t last_row = 0;
     size_t last_col = 0;
+    bool zero_matrix = true;
     for (size_t row_i = 0; row_i < cols; ++row_i) {
         for (size_t col_i = 0; col_i < rows; ++col_i) {
             if (!almostEqual(0, data[row_i][col_i])) {
                 ++use_row[row_i];
                 ++use_col[col_i];
+                zero_matrix = false;
             }
         }
+    }
+    if (zero_matrix) {
+        return;
     }
     size_t row_i = 0;
     size_t col_i = 0;
@@ -279,6 +282,7 @@ void Matrix::deleteZeroStreaks() {
             --row_i;
         }
     }
+    repeat_cnt = 0;
     for (; col_i < cols && repeat_cnt < cols - col_i; ++col_i) {
         if (prev == col_i) {
             ++repeat_cnt;
@@ -380,7 +384,7 @@ double Matrix::detWithRaws(byte* mem_tmps_raws) const {  // mem_tmps_raws is
 
 Matrix Matrix::adj() const {
     if (rows != cols) {
-        DimensionMismatch(*this);
+        throw DimensionMismatch(*this);
     }
     Matrix transposed = transp();
     Matrix result(transposed.cols, transposed.rows);
@@ -396,7 +400,7 @@ Matrix Matrix::adj() const {
 
 Matrix Matrix::inv() const {
     if (rows != cols) {
-        DimensionMismatch(*this);
+        throw DimensionMismatch(*this);
     }
     double determinant = det();
     if (almostEqual(0, determinant)) {
