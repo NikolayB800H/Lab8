@@ -13,12 +13,25 @@ int main() {
     std::cout << "Check lab №8? (y/n)\n";
     std::cin >> yes_or_no;
     if (yes_or_no == 'y') {  // lab8
-        std::cout << "Runing lab №8\n";
+        std::cout << "Runing lab №8\nWhat precision?\n";
+        size_t precision = 0;
+        std::cin >> precision;
         std::cout << std::setw(81) << std::setfill('=') << "[80 chars len]=\n" << std::setfill(' ');
         Matrix m3(SIZE, SIZE);
         m3.fillSpecial();
-        std::cout << std::scientific << m3 << std::fixed
-                  << std::setprecision(DOUBLE_WIDTH - ADDITIONAL_WIDTH) << m3;
+
+        std::cout << "Test double: " << 1.1 << std::endl;
+        m3.setStyle(SCIENTIFIC);  // !!!
+        std::cout << "Test double: " << 1.1 << std::endl;
+        std::cout << m3;
+        std::cout << "Test double: " << 1.1 << std::endl;
+        m3.setStyle(FIXED);  // !!!
+        std::cout << "Test double: " << 1.1 << std::endl;
+        m3.setPrecision(precision);  // !!!
+        std::cout << "Test double: " << 1.1 << std::endl;
+        std::cout << m3;
+        std::cout << "Test double: " << 1.1 << std::endl;
+
         struct Bmaker {
             double *ptrs[SIZE];
             double B[SIZE][SIZE];
@@ -34,7 +47,7 @@ int main() {
                 m4(row_i, col_i) = row_i * 10 + col_i;
             }
         }
-        std::cout << std::resetiosflags(std::ios_base::floatfield) << m4;
+        std::cout << m4;
         std::cout << B.B         << "  " << B.B[0]       << "  " << B.B[2]  << std::endl;
         std::cout << B.B[0][0]   << "  " << **B.B        << "  " << *B.B[0] << std::endl;
         std::cout << *(*(B.B+1)) << "  " << *B.B[1]      << std::endl;

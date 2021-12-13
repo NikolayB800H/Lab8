@@ -9,8 +9,8 @@ typedef char byte;  // so byte[] is not cstring, it is for big memory part
 constexpr size_t MIN_RECUR_SQR_MTRX = 2;
 constexpr size_t ONE_ELEM_MTRX_ROWS_CNT = 1;
 constexpr double BAD_RESULT = 0;
-constexpr size_t DOUBLE_WIDTH = 14;
-constexpr size_t ADDITIONAL_WIDTH = 6;
+// constexpr size_t DOUBLE_WIDTH = 14;
+constexpr size_t ADDITIONAL_WIDTH = 4;
 constexpr size_t DISPLAY_WIDTH = 79;
 
 enum Sign {
@@ -18,7 +18,14 @@ enum Sign {
     PLUS = 1
 };
 
+enum DoubleStyle {
+    SCIENTIFIC,
+    FIXED
+};
+
 class Matrix {
+    DoubleStyle style;
+    size_t precision;
     size_t rows;
     size_t cols;
     double** data;     // so we can use obj_ptr->data[i][j]
@@ -35,6 +42,9 @@ class Matrix {
                          Matrix *result) const;           // and in detWithRaws
 
  public:
+    void setPrecision(size_t new_precision);
+
+    void setStyle(DoubleStyle new_style);
 
     void fillSpecial();
 

@@ -63,6 +63,20 @@ static size_t factPow(size_t cols, size_t rows) {
     return result;
 }
 
+void Matrix::setPrecision(size_t new_precision) {
+    if (new_precision > DISPLAY_WIDTH - ADDITIONAL_WIDTH) {
+        throw BadMatrixPrecision();
+    }
+    precision = new_precision;
+}
+
+void Matrix::setStyle(DoubleStyle new_style) {
+    if (new_style != SCIENTIFIC && new_style != FIXED) {
+        throw BadMatrixStyle();
+    }
+    style = new_style;
+}
+
 void Matrix::fillSpecial() {
     for (size_t row_i = 0; row_i < rows; ++row_i) {
         for (size_t col_i = 0; col_i < cols; ++col_i) {
@@ -77,7 +91,7 @@ void Matrix::fillSpecial() {
     }
 }
 
-Matrix::Matrix(size_t rows, size_t cols) : rows(rows), cols(cols) {
+Matrix::Matrix(size_t rows, size_t cols) : style(FIXED), precision(ADDITIONAL_WIDTH), rows(rows), cols(cols) {
     data = new double *[rows];
     raw_data = new double[rows * cols];
     memset(data, 0, rows);
@@ -91,7 +105,9 @@ Matrix::Matrix(std::istream &is) {
     if (!is.good()) {
         throw InvalidMatrixStream();
     }
-    is >> rows >> cols;
+    int tmp = 0;
+    is >> rows >> cols >> precision >> tmp;
+    style = static_cast<DoubleStyle>(tmp);
     if (is.fail()) {
         throw InvalidMatrixStream();
     }
@@ -105,7 +121,16 @@ Matrix::Matrix(std::istream &is) {
     for (size_t row_i = 0; row_i < rows; ++row_i) {
         data[row_i] = raw_data + row_i * cols;
     }
-    const size_t display_row_cnt = DISPLAY_WIDTH / DOUBLE_WIDTH;
+    if (precision > DISPLAY_WIDTH - ADDITIONAL_WIDTH) {
+        throw BadMatrixPrecision();
+    }
+    size_t width = precision + ADDITIONAL_WIDTH;
+    switch (style) {
+        case SCIENTIFIC: width += ADDITIONAL_WIDTH; break;
+        case FIXED: break;
+        default: throw BadMatrixStyle();
+    }
+    const size_t display_row_cnt = DISPLAY_WIDTH / width;
     const size_t parts = (cols - 1) / display_row_cnt + 1;
     for (size_t part_i = 0; part_i < parts; ++part_i) {
         for (size_t row_i = 0; row_i < rows; ++row_i) {
@@ -120,7 +145,7 @@ Matrix::Matrix(std::istream &is) {
     }
 }
 
-Matrix::Matrix(size_t rows, size_t cols, byte *mem) : rows(rows), cols(cols) {
+Matrix::Matrix(size_t rows, size_t cols, byte *mem) : style(FIXED), precision(ADDITIONAL_WIDTH), rows(rows), cols(cols) {
     if (rows == 0 || cols == 0) {
         throw DimensionMismatch(*this);
     }
@@ -141,6 +166,8 @@ Matrix::~Matrix() {
 }
 
 Matrix::Matrix(const Matrix &rhs) : Matrix(rhs.rows, rhs.cols) {
+    style = rhs.style;
+    precision = rhs.precision;
     memcpy(raw_data, rhs.raw_data, rows * cols * sizeof(double));
 }
 
@@ -150,6 +177,8 @@ Matrix &Matrix::operator=(const Matrix &rhs) {
     }
     delete[] data;
     delete[] raw_data;
+    style = rhs.style;
+    precision = rhs.precision;
     rows = rhs.rows;
     cols = rhs.cols;
     data = new double *[rows];
@@ -445,18 +474,32 @@ Matrix operator*(double val, const Matrix &matrix) {
 }
 
 std::ostream &operator<<(std::ostream &os, const Matrix &matrix) {
-    os << matrix.rows << ' ' << matrix.cols << '\n';
-    const size_t display_row_cnt = DISPLAY_WIDTH / DOUBLE_WIDTH;
+    if (matrix.precision > DISPLAY_WIDTH - ADDITIONAL_WIDTH) {
+        throw BadMatrixPrecision();
+    }
+    os << matrix.rows << ' ' << matrix.cols << ' '
+       << matrix.precision << ' ' << matrix.style << '\n';
+    auto old_flags = os.flags();
+    auto old_precision = os.precision(matrix.precision);
+    size_t width = matrix.precision + ADDITIONAL_WIDTH;
+    switch (matrix.style) {
+        case SCIENTIFIC: width += ADDITIONAL_WIDTH; os.setf(std::ios::scientific); break;
+        case FIXED: os.setf(std::ios::fixed); break;
+        default: throw BadMatrixStyle();
+    }
+    const size_t display_row_cnt = DISPLAY_WIDTH / width;
     const size_t parts = (matrix.cols - 1) / display_row_cnt + 1;
     for (size_t part_i = 0; part_i < parts; ++part_i) {
         for (size_t row_i = 0; row_i < matrix.rows; ++row_i) {
             size_t end = (part_i != parts - 1) ? (part_i + 1) * display_row_cnt : matrix.cols;
             for (size_t col_i = part_i * display_row_cnt; col_i < end; ++col_i) {
-                os << std::setw(DOUBLE_WIDTH) << matrix.data[row_i][col_i];
+                os << std::setw(width) << matrix.data[row_i][col_i];
             }
             os << '\n';
         }
         os << '\n';
     }
+    os.precision(old_precision);
+    os.flags(old_flags);
     return os;
 }

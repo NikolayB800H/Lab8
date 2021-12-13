@@ -46,3 +46,13 @@ class SingularMatrix: public MatrixException {
  public:
     SingularMatrix() : MatrixException("Singular matrix") {}
 };
+
+class BadMatrixStyle: public MatrixException {
+ public:
+    BadMatrixStyle() : MatrixException("Bad matrix style") {}
+};
+
+class BadMatrixPrecision: public MatrixException {
+ public:
+    BadMatrixPrecision() : MatrixException("Bad matrix precision") {}
+};
