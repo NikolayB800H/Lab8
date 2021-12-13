@@ -16,21 +16,24 @@ int main() {
         std::cout << "Runing lab №8\nWhat precision?\n";
         size_t precision = 0;
         std::cin >> precision;
+        size_t size_m = 0;
+        std::cout << "What size?\n";
+        std::cin >> size_m;
         std::cout << std::setw(81) << std::setfill('=') << "[80 chars len]=\n" << std::setfill(' ');
-        Matrix m3(SIZE, SIZE);
+        Matrix m3(size_m, size_m);
         m3.fillSpecial();
 
-        std::cout << "Test double: " << 1.1 << std::endl;
-        m3.setStyle(SCIENTIFIC);  // !!!
-        std::cout << "Test double: " << 1.1 << std::endl;
-        std::cout << m3;
-        std::cout << "Test double: " << 1.1 << std::endl;
-        m3.setStyle(FIXED);  // !!!
-        std::cout << "Test double: " << 1.1 << std::endl;
         m3.setPrecision(precision);  // !!!
-        std::cout << "Test double: " << 1.1 << std::endl;
+        //std::cout << "Test double: " << 1.1 << std::endl;
+        m3.setStyle(SCIENTIFIC);  // !!!
+        //std::cout << "Test double: " << 1.1 << std::endl;
         std::cout << m3;
-        std::cout << "Test double: " << 1.1 << std::endl;
+        //std::cout << "Test double: " << 1.1 << std::endl;
+        m3.setStyle(FIXED);  // !!!
+        //std::cout << "Test double: " << 1.1 << std::endl;
+        //std::cout << "Test double: " << 1.1 << std::endl;
+        std::cout << m3;
+        //std::cout << "Test double: " << 1.1 << std::endl;
 
         struct Bmaker {
             double *ptrs[SIZE];
@@ -47,12 +50,16 @@ int main() {
                 m4(row_i, col_i) = row_i * 10 + col_i;
             }
         }
+        m4.setPrecision(0);  // !!!
         std::cout << m4;
-        std::cout << B.B         << "  " << B.B[0]       << "  " << B.B[2]  << std::endl;
-        std::cout << B.B[0][0]   << "  " << **B.B        << "  " << *B.B[0] << std::endl;
-        std::cout << *(*(B.B+1)) << "  " << *B.B[1]      << std::endl;
-        std::cout << *(B.B[0]+1) << "  " << *(*B.B+1)    << std::endl;
-        std::cout << B.B[0][20]  << "  " << *(B.B[0]+20) << "  " << *B.B[2] << std::endl;
+        std::cout << B.B << std::endl;
+        #define A B.B
+        std::cout << A << std::endl;
+        std::cout << "  " << A[2]+2       << "  " << *(A+1)  << std::endl;
+        std::cout << (*A+2)  << "  " << *A[1] -1 << "  " << A[3][23] << std::endl;
+        std::cout << (A+1) << "  " << A[7]-5      << std::endl;
+        std::cout << A[0]+1 << "  " << *A[4]+4    << std::endl;
+        std::cout << A[0][20]  << "  " << (A[0]+20) << "  " << A[2] << std::endl;
         m4.data = nullptr;
         m4.raw_data = nullptr;
     } else {  // delete zero streaks

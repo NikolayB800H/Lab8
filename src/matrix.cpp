@@ -48,14 +48,18 @@ static size_t matricesSizesSum(size_t from, size_t to) {  // Finish rows/cols
     return result;
 }
 
-static size_t factPow(size_t cols, size_t rows) {
-    size_t result = 1;
+static double factPow(size_t cols, size_t rows) {
+    double result = 1;
     for (; cols > 0; --cols) {
         result *= cols;
     }
-    size_t cpy = result;
+    if (result == 1 || rows == 0) {
+        return 0;
+    }
+    double cpy = result;
+    result = 1 / result;
     for (; rows > 1; --rows) {
-        result *= cpy;
+        result /= cpy;
     }
     if (rows == 0) {
         result = 1;
@@ -83,9 +87,9 @@ void Matrix::fillSpecial() {
             if (row_i == col_i) {
                 data[row_i][col_i] = 1;
             } else if (row_i < col_i) {
-                data[row_i][col_i] = 1.0 / factPow(col_i, row_i);;
+                data[row_i][col_i] = factPow(col_i, row_i);
             } else {
-                data[row_i][col_i] = (1.0 - 2 * (row_i % 2)) / factPow(col_i, row_i);;
+                data[row_i][col_i] = (1.0 - 2 * (row_i % 2)) * factPow(col_i, row_i);
             }
         }
     }
