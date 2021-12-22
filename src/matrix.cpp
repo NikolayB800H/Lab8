@@ -454,22 +454,35 @@ Matrix Matrix::invGauJor() const {
     if (rows != cols) {
         throw DimensionMismatch(*this);
     }
-    double determinant = det();
+    /*double determinant = det();
     if (almostEqual(0, determinant)) {
         throw SingularMatrix();
-    }
+    }*/
     // ^ Bad matrix check ^
     Matrix original(*this);
     Matrix inverted(rows, cols);
     inverted.fillE();
+    double tmp = 0;
     for (size_t row_i = 0; row_i < inverted.rows; ++row_i) {
-        double tmp = original.data[row_i][row_i];
+        tmp = original.data[row_i][row_i];
+        if (almostEqual(0, tmp)) {
+            throw SingularMatrix(); // That's wrong, but I don't want to iterate all permutations
+        }
         for (size_t col_i = inverted.cols - 1; col_i != static_cast<size_t>(-1); --col_i) {
             inverted.data[row_i][col_i] /= tmp;
             original.data[row_i][col_i] /= tmp;
         }
+        for (size_t row_j = row_i + 1; row_j < inverted.rows; ++row_j) {
+            inverted.rowMinusRowCoef(row_j, original.data[row_j][row_i], row_i);
+            original.rowMinusRowCoef(row_j, original.data[row_j][row_i], row_i);
+        }
     }
-    // TODO(me): cont
+    for (size_t row_i = inverted.rows - 1; row_i != static_cast<size_t>(-1); --row_i) {
+        for (size_t row_j = 0; row_j < row_i; ++row_j) {
+            inverted.rowMinusRowCoef(row_j, original.data[row_j][row_i], row_i);
+            original.rowMinusRowCoef(row_j, original.data[row_j][row_i], row_i);
+        }
+    }
     return inverted;
 }
 
@@ -488,6 +501,12 @@ void Matrix::createMinorPart(size_t row_to_del, size_t col_to_del,
                 data[((row_i < row_to_del) ? row_i : (row_i + 1))]
                     [((col_i < col_to_del) ? col_i : (col_i + 1))];
         }
+    }
+}
+
+void Matrix::rowMinusRowCoef(size_t row_j, double coef, size_t row_i) {
+    for (size_t col_i = 0; col_i < cols; ++col_i) {
+        data[row_j][col_i] -= data[row_i][col_i] * coef;
     }
 }
 

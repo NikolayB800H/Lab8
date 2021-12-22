@@ -41,6 +41,8 @@ class Matrix {
     void createMinorPart(size_t row_to_del, size_t col_to_del,  // Using in adj
                          Matrix *result) const;           // and in detWithRaws
 
+    void rowMinusRowCoef(size_t row_j, double coef, size_t row_i);
+
  public:
     void setPrecision(size_t new_precision);
 
