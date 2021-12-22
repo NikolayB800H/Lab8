@@ -9,7 +9,7 @@
 constexpr size_t SIZE = 10;  // How many rows (and collums) in matrix (for lab8)
 
 int main() {
-    char yes_or_no = 'n';
+    /*char yes_or_no = 'n';
     std::cout << "Check lab №8? (y/n)\n";
     std::cin >> yes_or_no;
     if (yes_or_no == 'y') {  // lab8
@@ -70,6 +70,16 @@ int main() {
         m1.deleteZeroStreaks();
         std::cout << "Without zero streaks:\n" << m1;
         is.close();
-    }
+    }*/
+    std::cout << "Running lab 10\n";
+    std::ifstream is("in");
+    Matrix m1(is);
+    is.close();
+    std::cout << "Got from file:\n" << m1;
+    Matrix m_default(m1.inv());
+    std::cout << "inv default:\n" << m_default;
+    Matrix m_g_j(m1.invGauJor());
+    std::cout << "inv GauJor:\n" << m_g_j;
+    std::cout << "is equ: " << (m_g_j == m_default) << std::endl;
     return 0;
 }

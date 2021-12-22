@@ -95,6 +95,14 @@ void Matrix::fillSpecial() {
     }
 }
 
+void Matrix::fillE() {
+    for (size_t row_i = 0; row_i < rows; ++row_i) {
+        for (size_t col_i = 0; col_i < cols; ++col_i) {
+            data[row_i][col_i] = static_cast<double>(static_cast<int>(row_i == col_i));
+        }
+    }
+}
+
 Matrix::Matrix(size_t rows, size_t cols) : style(FIXED), precision(ADDITIONAL_WIDTH), rows(rows), cols(cols) {
     data = new double *[rows];
     raw_data = new double[rows * cols];
@@ -440,6 +448,29 @@ Matrix Matrix::inv() const {
         throw SingularMatrix();
     }
     return adj() * (1 / det());
+}
+
+Matrix Matrix::invGauJor() const {
+    if (rows != cols) {
+        throw DimensionMismatch(*this);
+    }
+    double determinant = det();
+    if (almostEqual(0, determinant)) {
+        throw SingularMatrix();
+    }
+    // ^ Bad matrix check ^
+    Matrix original(*this);
+    Matrix inverted(rows, cols);
+    inverted.fillE();
+    for (size_t row_i = 0; row_i < inverted.rows; ++row_i) {
+        double tmp = original.data[row_i][row_i];
+        for (size_t col_i = inverted.cols - 1; col_i != static_cast<size_t>(-1); --col_i) {
+            inverted.data[row_i][col_i] /= tmp;
+            original.data[row_i][col_i] /= tmp;
+        }
+    }
+    // TODO(me): cont
+    return inverted;
 }
 
 void Matrix::createMinorPart(size_t row_to_del, size_t col_to_del,

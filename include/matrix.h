@@ -33,8 +33,8 @@ class Matrix {
 
     explicit Matrix(size_t rows, size_t cols, byte *mem);  // Placement Matrix
                                                         // for det optimization
-    friend
-    int main();  // Just to use explicit Matrix(size_t rows, size_t cols, byte *mem)
+    //friend
+    //int main();  // Just to use explicit Matrix(size_t rows, size_t cols, byte *mem)
 
     double detWithRaws(char* mem_tmps_raws) const;  // Using in det
 
@@ -47,6 +47,8 @@ class Matrix {
     void setStyle(DoubleStyle new_style);
 
     void fillSpecial();
+
+    void fillE();
 
     explicit Matrix(size_t rows = 0, size_t cols = 0);
 
@@ -98,6 +100,8 @@ class Matrix {
     Matrix adj() const;
 
     Matrix inv() const;
+
+    Matrix invGauJor() const;
 };
 
 Matrix sumWithAdditionalSign(const Matrix &lhs, const Matrix &rhs, Sign sign);
