@@ -8,6 +8,12 @@
 #include <istream>
 #include <limits>
 
+#define LAB10_MSGS
+
+#ifdef LAB10_MSGS
+#include <iostream>
+#endif
+
 template <class T>
 static void swap(T &a, T &b) {
     T tmp = a;
@@ -454,19 +460,18 @@ Matrix Matrix::invGauJor() const {
     if (rows != cols) {
         throw DimensionMismatch(*this);
     }
-    /*double determinant = det();
-    if (almostEqual(0, determinant)) {
-        throw SingularMatrix();
-    }*/
-    // ^ Bad matrix check ^
     Matrix original(*this);
     Matrix inverted(rows, cols);
     inverted.fillE();
     double tmp = 0;
+    original.removeZerosFromMain(inverted);
+    #ifdef LAB10_MSGS
+    std::cout << "After removing zeros from main diag:\n" << original << "(original)\n";
+    #endif
     for (size_t row_i = 0; row_i < inverted.rows; ++row_i) {
         tmp = original.data[row_i][row_i];
         if (almostEqual(0, tmp)) {
-            throw SingularMatrix(); // That's wrong, but I don't want to iterate all permutations
+            throw SingularMatrix(); // removeZerosFromMain() should prevent this, but what if something went wrong...
         }
         for (size_t col_i = inverted.cols - 1; col_i != static_cast<size_t>(-1); --col_i) {
             inverted.data[row_i][col_i] /= tmp;
@@ -477,12 +482,18 @@ Matrix Matrix::invGauJor() const {
             original.rowMinusRowCoef(row_j, original.data[row_j][row_i], row_i);
         }
     }
+    #ifdef LAB10_MSGS
+    std::cout << "After forward move:\n" << original << "(original)\n" << inverted << "(inverted)\n";
+    #endif
     for (size_t row_i = inverted.rows - 1; row_i != static_cast<size_t>(-1); --row_i) {
         for (size_t row_j = 0; row_j < row_i; ++row_j) {
             inverted.rowMinusRowCoef(row_j, original.data[row_j][row_i], row_i);
             original.rowMinusRowCoef(row_j, original.data[row_j][row_i], row_i);
         }
     }
+    #ifdef LAB10_MSGS
+    std::cout << "After backward move:\n" << original << "(original)\n" << inverted << "(inverted)\n";
+    #endif
     return inverted;
 }
 
@@ -508,6 +519,66 @@ void Matrix::rowMinusRowCoef(size_t row_j, double coef, size_t row_i) {
     for (size_t col_i = 0; col_i < cols; ++col_i) {
         data[row_j][col_i] -= data[row_i][col_i] * coef;
     }
+}
+
+void Matrix::removeZerosFromMain(Matrix &additional) {
+    bool *if_row_not_zero_in_col = new bool[rows * cols];
+    size_t *cnts = new size_t[rows];
+    double **new_data = new double *[rows];
+    double **new_data_additional = new double *[rows];
+    size_t min_pos = 0;
+    size_t min_cnt = rows + 1;
+    for (size_t row_i = 0; row_i < rows; ++row_i) {
+        cnts[row_i] = 0;
+        for (size_t col_i = 0; col_i < cols; ++col_i) {
+            if (!almostEqual(0, data[row_i][col_i])) {
+                if_row_not_zero_in_col[row_i * cols + col_i] = true;
+                ++cnts[row_i];
+            } else {
+                if_row_not_zero_in_col[row_i * cols + col_i] = false;
+            }
+        }
+    }
+    /*for (size_t row_i = 0; row_i < rows; ++row_i) {
+        std::cout << cnts[row_i] << " | ";
+        for (size_t col_i = 0; col_i < cols; ++col_i) {
+            std::cout << if_row_not_zero_in_col[row_i * cols + col_i];
+        }
+        std::cout << std::endl;
+    }*/
+    size_t col_i_added = 0;
+    bool is_singular = false;
+    for (size_t row_i_adding = 0; row_i_adding < rows; ++row_i_adding) {
+        min_cnt = rows + 1;
+        is_singular = true;
+        for (size_t row_i = 0; row_i < rows; ++row_i) {
+            if (cnts[row_i] < min_cnt && if_row_not_zero_in_col[row_i * cols + row_i_adding]) {
+                min_pos = row_i;
+                min_cnt = cnts[row_i];
+                is_singular = false;
+            }
+        }
+        if (is_singular) {
+            throw SingularMatrix();
+        }
+        new_data[row_i_adding] = data[min_pos];
+        new_data_additional[row_i_adding] = additional.data[min_pos];
+        col_i_added = row_i_adding;
+        cnts[min_pos] = static_cast<size_t>(-1);
+        for (size_t row_i = 0; row_i < rows; ++row_i) {
+            if (if_row_not_zero_in_col[row_i * cols + col_i_added]) {
+                if_row_not_zero_in_col[row_i * cols + col_i_added] = false;
+                --cnts[row_i];
+            }
+        }
+        //std::cout << "AFTER move #" << row_i_adding << ":\n" << *this << "-----\n";
+    }
+    delete[] data;
+    data = new_data;
+    delete[] additional.data;
+    additional.data = new_data_additional;
+    delete[] if_row_not_zero_in_col;
+    delete[] cnts;
 }
 
 Matrix sumWithAdditionalSign(const Matrix &lhs, const Matrix &rhs, Sign sign) {
@@ -551,7 +622,9 @@ std::ostream &operator<<(std::ostream &os, const Matrix &matrix) {
             }
             os << '\n';
         }
-        os << '\n';
+        if (part_i + 1 < parts) {
+            os << '\n';
+        }
     }
     os.precision(old_precision);
     os.flags(old_flags);

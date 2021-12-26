@@ -43,6 +43,8 @@ class Matrix {
 
     void rowMinusRowCoef(size_t row_j, double coef, size_t row_i);
 
+    void removeZerosFromMain(Matrix &additional);
+
  public:
     void setPrecision(size_t new_precision);
 
