@@ -35,7 +35,13 @@ int main() {
               << "Finding A^-1:\n";
     A.setPrecision(PRECISION);
     B.setPrecision(PRECISION);
-    Matrix inverted_A(A.invGauJor());
+    Matrix inverted_A(rows, cols);
+    try {
+        inverted_A = A.invGauJor();
+    } catch (SingularMatrix err) {
+        std::cout << err.what() << " - no inverted matrix.\nCan't solve equation." << std::endl;
+        return 0;
+    }
     std::cout << "A^-1 is:\n" << inverted_A;
     Matrix to_test(inverted_A * A);
     std::cout << "Testing, if A^-1 * A = E:\n" << to_test;

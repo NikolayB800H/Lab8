@@ -9,7 +9,6 @@ typedef char byte;  // so byte[] is not cstring, it is for big memory part
 constexpr size_t MIN_RECUR_SQR_MTRX = 2;
 constexpr size_t ONE_ELEM_MTRX_ROWS_CNT = 1;
 constexpr double BAD_RESULT = 0;
-// constexpr size_t DOUBLE_WIDTH = 14;
 constexpr size_t ADDITIONAL_WIDTH = 5;
 constexpr size_t DISPLAY_WIDTH = 79;
 
@@ -33,8 +32,6 @@ class Matrix {
 
     explicit Matrix(size_t rows, size_t cols, byte *mem);  // Placement Matrix
                                                         // for det optimization
-    //friend
-    //int main();  // Just to use explicit Matrix(size_t rows, size_t cols, byte *mem)
 
     double detWithRaws(char* mem_tmps_raws) const;  // Using in det
 

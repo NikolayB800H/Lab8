@@ -187,24 +187,28 @@ Matrix::Matrix(const Matrix &rhs) : Matrix(rhs.rows, rhs.cols) {
     style = rhs.style;
     precision = rhs.precision;
     memcpy(raw_data, rhs.raw_data, rows * cols * sizeof(double));
+    for (size_t row_i = 0; row_i < rows; ++row_i) {
+        data[row_i] = raw_data + (rhs.data[row_i] - rhs.raw_data);
+    }
 }
 
 Matrix &Matrix::operator=(const Matrix &rhs) {
     if (this == &rhs) {
         return *this;
     }
-    delete[] data;
     delete[] raw_data;
     style = rhs.style;
     precision = rhs.precision;
     rows = rhs.rows;
     cols = rhs.cols;
-    data = new double *[rows];
+    double **new_data = new double *[rows];
     raw_data = new double[rows * cols];
     for (size_t row_i = 0; row_i < rows; ++row_i) {
-        data[row_i] = raw_data + row_i * cols;
+        new_data[row_i] = raw_data + (rhs.data[row_i] - rhs.raw_data);
     }
     memcpy(raw_data, rhs.raw_data, rows * cols * sizeof(double));
+    delete[] data;
+    data = new_data;
     return *this;
 }
 
